@@ -18,8 +18,7 @@ const umkmData = [
   { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",    ikon: "🍚", wa: "6281234567801" },
   { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta", ikon: "🥔", wa: "6281234567802" },
   { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",    ikon: "☕", wa: "6281234567803" },
-  { id: 4, nama: "Dapur Kue Ayu",      lokasi: "Surabaya",   ikon: "🍰", wa: "6281234567804" },
-  { Id: 5, nama: "Pak Hambali",        lokasi: "Ngawi Timur",ikon: "🍫", wa: "6281234567805" }
+  { id: 4, nama: "Dapur Kue Ayu",      lokasi: "Surabaya",   ikon: "🍰", wa: "6281234567804" }
 ];
 
 const produkData = [
@@ -37,7 +36,7 @@ const produkData = [
     deskripsi: "Biji kopi arabika single origin, sangrai medium dengan aroma floral dan manis." },
   { id: 7, nama: "Bolu Pandan Lembut", harga: 35000, umkmId: 4, emoji: "🍰", warna: "#d3f9d8",
     deskripsi: "Bolu pandan super lembut tanpa pengawet, dipanggang segar setiap hari." },
-  { id: 8, nama: "Puding coklat", harga: 40000, umkmId: 5, emoji: "🍫", warna: "#e0cfc2",
+  { id: 8, nama: "Puding coklat", harga: 40000, umkmId: 4, emoji: "🍫", warna: "#e0cfc2",
     deskripsi: "Puding coklat yang kenyal dengan cokelat premium dan topping fla." }
 ];
 
