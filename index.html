@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Katalog UMKM Makanan</title>
+  <meta name="theme-color" content="#e8590c">
+  <title>Toko JosJis · Katalog UMKM Makanan</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e8590c'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle'%3E🍜%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,16 +16,21 @@
   <!-- HEADER -->
   <header class="site-header">
     <div class="container header-inner">
-      <a href="#" class="brand" id="brand-link">Toko JosJis</a>
-      <nav class="nav">
-        <button class="nav-btn active" data-view="home">Beranda</button>
-        <button class="nav-btn" data-view="search">Cari Makanan</button>
-        <button class="nav-btn" data-view="catalog">Lihat Katalog</button>
-        <button class="nav-btn" data-view="dashboard" id="nav-dashboard" hidden>📊 Dashboard</button>
-        <span class="user-chip" id="user-chip" hidden></span>
-        <button class="nav-btn nav-login" data-view="login" id="nav-login">Masuk</button>
-        <button class="nav-btn" id="nav-logout" hidden>Keluar</button>
+      <a href="#" class="brand" id="brand-link">
+        <span class="brand-mark" aria-hidden="true">🍜</span>
+        <span class="brand-text">Toko <b>JosJis</b></span>
+      </a>
+
+      <nav class="nav" aria-label="Menu utama">
+        <button class="nav-btn active" data-view="home"><span class="ni" aria-hidden="true">🏠</span><span class="nl">Beranda</span></button>
+        <button class="nav-btn" data-view="search"><span class="ni" aria-hidden="true">🔍</span><span class="nl">Cari Makanan</span></button>
+        <button class="nav-btn" data-view="catalog"><span class="ni" aria-hidden="true">📖</span><span class="nl">Lihat Katalog</span></button>
+        <button class="nav-btn" data-view="dashboard" id="nav-dashboard" hidden><span class="ni" aria-hidden="true">📊</span><span class="nl">Dashboard</span></button>
+        <button class="nav-btn nav-login" data-view="login" id="nav-login"><span class="ni" aria-hidden="true">👤</span><span class="nl">Masuk</span></button>
+        <button class="nav-btn" id="nav-logout" hidden><span class="ni" aria-hidden="true">🚪</span><span class="nl">Keluar</span></button>
       </nav>
+
+      <span class="user-chip" id="user-chip" hidden></span>
     </div>
   </header>
 
@@ -28,20 +38,64 @@
 
     <!-- ========== BERANDA ========== -->
     <section id="view-home" class="view active">
+
       <div class="hero">
-        <h1>Temukan Makanan Lezat dari UMKM Lokal</h1>
-        <p>Dukung usaha kecil di sekitar Anda. Cari makanan favorit atau jelajahi katalog lengkap.</p>
-        <div class="menu-choice">
-          <button class="btn btn-primary" data-view="search">🔍 Cari Makanan</button>
-          <button class="btn btn-secondary" data-view="catalog">📖 Lihat Katalog</button>
+        <div class="hero-content">
+          <span class="hero-eyebrow">🌿 Dukung usaha kecil di sekitar Anda</span>
+          <h1>Temukan makanan lezat dari <span class="hl">UMKM lokal</span></h1>
+          <p>Cari makanan favorit atau jelajahi katalog lengkap, lalu pesan langsung ke penjual lewat WhatsApp.</p>
+
+          <form id="hero-search" class="hero-search" role="search">
+            <span class="hs-icon" aria-hidden="true">🔍</span>
+            <input type="text" id="hero-keyword" placeholder="Mau makan apa hari ini?" autocomplete="off" aria-label="Cari makanan">
+            <button type="submit" class="btn btn-primary">Cari</button>
+          </form>
+
+          <div class="chips chips-hero" id="hero-chips" aria-label="Kategori"></div>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <span class="bubble b1">🍛</span>
+          <span class="bubble b2">🍗</span>
+          <span class="bubble b3">☕</span>
+          <span class="bubble b4">🍰</span>
         </div>
       </div>
 
-      <h2 class="section-title">Daftar UMKM</h2>
+      <div class="section-head">
+        <h2 class="section-title">Makanan Pilihan</h2>
+        <div class="section-tools">
+          <button type="button" class="round-btn" id="car-prev" aria-label="Geser ke kiri">‹</button>
+          <button type="button" class="round-btn" id="car-next" aria-label="Geser ke kanan">›</button>
+        </div>
+      </div>
+      <div id="featured-list" class="carousel"></div>
+
+      <div class="section-head">
+        <h2 class="section-title">Daftar UMKM</h2>
+      </div>
       <div id="umkm-list" class="umkm-grid"></div>
 
-      <h2 class="section-title">Makanan Pilihan</h2>
-      <div id="featured-list" class="product-grid"></div>
+      <div class="section-head">
+        <h2 class="section-title">Cara Memesan</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <h3>Pilih makanan</h3>
+          <p>Cari atau jelajahi katalog dari berbagai UMKM lokal.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <h3>Atur jumlah</h3>
+          <p>Buka detail produk lalu tentukan jumlah. Masuk dulu agar pesanan Anda tercatat.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <h3>Pesan via WhatsApp</h3>
+          <p>Chat langsung dengan penjual untuk konfirmasi dan pengiriman.</p>
+        </div>
+      </div>
     </section>
 
     <!-- ========== CARI MAKANAN ========== -->
@@ -66,20 +120,49 @@
     <!-- ========== KATALOG ========== -->
     <section id="view-catalog" class="view">
       <h2 class="section-title">Katalog Produk</h2>
+
+      <div class="toolbar">
+        <div class="chips" id="catalog-chips" aria-label="Filter kategori"></div>
+        <label class="sort-box">
+          <span class="sr-only">Urutkan</span>
+          <select id="catalog-sort">
+            <option value="default">Urutkan: Rekomendasi</option>
+            <option value="termurah">Harga terendah</option>
+            <option value="termahal">Harga tertinggi</option>
+            <option value="nama">Nama A–Z</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="catalog-meta">
+        <span id="catalog-count" class="info-text"></span>
+        <span class="tag" id="catalog-umkm-tag" hidden>
+          🏪 <span id="catalog-umkm-nama"></span>
+          <button type="button" id="catalog-umkm-clear" aria-label="Hapus filter UMKM">✕</button>
+        </span>
+      </div>
+
       <div id="catalog-list" class="product-grid"></div>
+
+      <div id="catalog-empty" class="not-found" hidden>
+        <div class="emoji">🍽️</div>
+        <h3>Belum ada produk</h3>
+        <p>Tidak ada produk pada filter ini. Coba pilih kategori lain.</p>
+      </div>
     </section>
 
     <!-- ========== DETAIL PRODUK ========== -->
     <section id="view-detail" class="view">
       <article class="detail">
-        <div id="detail-photo" class="detail-photo"></div>
+        <div id="detail-photo" class="detail-photo photo-box"></div>
         <div class="detail-body">
+          <span class="cat-pill" id="detail-cat"></span>
           <h2 id="detail-name"></h2>
           <p class="price" id="detail-price"></p>
           <p id="detail-desc" class="desc"></p>
           <ul class="detail-meta">
-            <li><strong>UMKM:</strong> <span id="detail-umkm"></span></li>
-            <li><strong>Lokasi:</strong> <span id="detail-location"></span></li>
+            <li><span class="mi" aria-hidden="true">🏪</span><span><strong>UMKM</strong> <span id="detail-umkm"></span></span></li>
+            <li><span class="mi" aria-hidden="true">📍</span><span><strong>Lokasi</strong> <span id="detail-location"></span></span></li>
           </ul>
 
           <p class="question">Ingin menghubungi penjual?</p>
@@ -90,7 +173,7 @@
           </div>
           <div class="detail-actions">
             <button class="btn btn-whatsapp" id="btn-wa">💬 Pesan via WhatsApp</button>
-            <button class="btn btn-secondary" id="btn-back-catalog">Tidak, Kembali ke Katalog</button>
+            <button class="btn btn-secondary" id="btn-back-catalog">Kembali ke Katalog</button>
           </div>
           <p class="hint" id="detail-login-hint" hidden>Masuk dulu untuk memesan. Pesanan Anda akan tercatat.</p>
         </div>
@@ -100,6 +183,10 @@
     <!-- ========== LOGIN / DAFTAR ========== -->
     <section id="view-login" class="view">
       <div class="auth-card">
+        <div class="auth-logo" aria-hidden="true">🍜</div>
+        <h2 class="auth-title">Selamat datang di Toko JosJis</h2>
+        <p class="auth-sub">Masuk atau buat akun untuk memesan makanan dari UMKM lokal.</p>
+
         <div class="auth-tabs" role="tablist">
           <button type="button" class="auth-tab active" data-mode="login" role="tab">Masuk</button>
           <button type="button" class="auth-tab" data-mode="register" role="tab">Daftar</button>
@@ -145,10 +232,33 @@
 
       <div id="dash-content" hidden>
         <div class="stat-grid">
-          <div class="stat"><span class="stat-value" id="stat-orders">0</span><span class="stat-label">Transaksi</span></div>
-          <div class="stat"><span class="stat-value" id="stat-items">0</span><span class="stat-label">Item terjual</span></div>
-          <div class="stat"><span class="stat-value" id="stat-revenue">Rp 0</span><span class="stat-label">Total nilai pembelian</span></div>
-          <div class="stat"><span class="stat-value" id="stat-buyers">0</span><span class="stat-label">Pembeli unik</span></div>
+          <div class="stat">
+            <span class="stat-ico" aria-hidden="true">🧾</span>
+            <div class="stat-text"><span class="stat-value" id="stat-orders">0</span><span class="stat-label">Transaksi</span></div>
+          </div>
+          <div class="stat">
+            <span class="stat-ico" aria-hidden="true">📦</span>
+            <div class="stat-text"><span class="stat-value" id="stat-items">0</span><span class="stat-label">Item terjual</span></div>
+          </div>
+          <div class="stat">
+            <span class="stat-ico" aria-hidden="true">💰</span>
+            <div class="stat-text"><span class="stat-value" id="stat-revenue">Rp 0</span><span class="stat-label">Total nilai pembelian</span></div>
+          </div>
+          <div class="stat">
+            <span class="stat-ico" aria-hidden="true">👥</span>
+            <div class="stat-text"><span class="stat-value" id="stat-buyers">0</span><span class="stat-label">Pembeli unik</span></div>
+          </div>
+        </div>
+
+        <div class="chart-grid" id="chart-grid">
+          <section class="panel panel-wide">
+            <h3 class="panel-title">Nilai pembelian per hari</h3>
+            <div class="chart-box"><canvas id="chart-daily"></canvas></div>
+          </section>
+          <section class="panel">
+            <h3 class="panel-title">Nilai per UMKM</h3>
+            <div class="chart-box"><canvas id="chart-umkm"></canvas></div>
+          </section>
         </div>
 
         <h3 class="sub-title">Per UMKM</h3>
@@ -180,11 +290,18 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container">© 2026 Toko JosJis</div>
+    <div class="container footer-inner">
+      <div>
+        <div class="footer-brand">🍜 Toko JosJis</div>
+        <p>Katalog makanan UMKM lokal. Pesan langsung ke penjual lewat WhatsApp.</p>
+      </div>
+      <p class="copy">© 2026 Toko JosJis</p>
+    </div>
   </footer>
 
   <div id="toast" class="toast" hidden></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="script.js"></script>
 </body>
