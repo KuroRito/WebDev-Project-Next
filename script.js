@@ -18,7 +18,7 @@ const umkmData = [
   { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",    ikon: "🍚", wa: "6281234567801" },
   { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta", ikon: "🥔", wa: "6281234567802" },
   { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",    ikon: "☕", wa: "6281234567803" },
-  { id: 4, nama: "Dapur Kue Ayu",      lokasi: "Surabaya",   ikon: "🍰", wa: "6281234567804" }
+  { id: 4, nama: "Pak Hambali",        lokasi: "Surabaya",   ikon: "🍫", wa: "6281234567804" }
 ];
 
 const produkData = [
