@@ -1,5 +1,5 @@
 /* =========================================================
-   Web Katalog UMKM Makanan + Login Supabase + Dashboard Manajer
+   Toko JosJis — Katalog UMKM Makanan + Login Supabase + Dashboard Manajer
    ========================================================= */
 
 /* ---------- KONFIGURASI SUPABASE ----------
@@ -13,30 +13,48 @@ const sb =
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-/* ---------- DATA ---------- */
+/* ---------- DATA ----------
+   Field opsional pada produk:
+   - gambar : URL foto produk (jika kosong, tampil emoji)
+   - badge  : label di pojok foto, mis. "Terlaris", "Baru", "Promo" */
+const kategoriData = [
+  { nama: "Makanan Berat", ikon: "🍛" },
+  { nama: "Camilan",       ikon: "🥔" },
+  { nama: "Minuman",       ikon: "☕" },
+  { nama: "Kue & Dessert", ikon: "🍰" }
+];
+
 const umkmData = [
-  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",    ikon: "🍚", wa: "6281234567801" },
-  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta", ikon: "🥔", wa: "6281234567802" },
-  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",    ikon: "☕", wa: "6281234567803" },
-  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur",ikon: "🍫", wa: "6281234567804" }
+  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", warna: "#ffe8cc", wa: "6281234567801" },
+  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", warna: "#fff3bf", wa: "6281234567802" },
+  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", warna: "#e9d8c4", wa: "6281234567803" },
+  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", warna: "#e0cfc2", wa: "6281234567804" }
 ];
 
 const produkData = [
   { id: 1, nama: "Nasi Liwet Komplit", harga: 25000, umkmId: 1, emoji: "🍛", warna: "#ffe8cc",
+    kategori: "Makanan Berat", badge: "Terlaris", gambar: "",
     deskripsi: "Nasi liwet gurih dengan ayam suwir, tahu, tempe, lalapan, dan sambal terasi." },
   { id: 2, nama: "Ayam Goreng Kremes", harga: 22000, umkmId: 1, emoji: "🍗", warna: "#ffd8a8",
+    kategori: "Makanan Berat", badge: "", gambar: "",
     deskripsi: "Ayam goreng bumbu kuning dengan taburan kremes renyah, disajikan dengan sambal." },
   { id: 3, nama: "Keripik Singkong Pedas", harga: 15000, umkmId: 2, emoji: "🥔", warna: "#fff3bf",
+    kategori: "Camilan", badge: "", gambar: "",
     deskripsi: "Keripik singkong renyah dengan bumbu pedas manis. Kemasan 200 gram." },
   { id: 4, nama: "Keripik Pisang Cokelat", harga: 18000, umkmId: 2, emoji: "🍌", warna: "#ffec99",
+    kategori: "Camilan", badge: "", gambar: "",
     deskripsi: "Keripik pisang tipis dilapisi cokelat lumer. Cocok untuk camilan keluarga." },
   { id: 5, nama: "Kopi Susu Gula Aren", harga: 20000, umkmId: 3, emoji: "☕", warna: "#e9d8c4",
+    kategori: "Minuman", badge: "", gambar: "",
     deskripsi: "Perpaduan espresso, susu segar, dan gula aren asli. Tersedia panas atau dingin." },
   { id: 6, nama: "Biji Kopi Arabika 250g", harga: 65000, umkmId: 3, emoji: "🫘", warna: "#d9c3a5",
+    kategori: "Minuman", badge: "", gambar: "",
     deskripsi: "Biji kopi arabika single origin, sangrai medium dengan aroma floral dan manis." },
   { id: 7, nama: "Bolu Pandan Lembut", harga: 35000, umkmId: 4, emoji: "🍰", warna: "#d3f9d8",
+    kategori: "Kue & Dessert", badge: "", gambar: "",
     deskripsi: "Bolu pandan super lembut tanpa pengawet, dipanggang segar setiap hari." },
   { id: 8, nama: "Puding coklat", harga: 40000, umkmId: 4, emoji: "🍫", warna: "#e0cfc2",
+    kategori: "Kue & Dessert", badge: "Baru", gambar: "",
     deskripsi: "Puding coklat yang kenyal dengan cokelat premium dan topping fla." }
 ];
 
@@ -58,6 +76,9 @@ let viewSetelahLogin = null; // view tujuan setelah login berhasil
 
 const isManager = () => currentProfile?.role === "manager";
 
+/* ---------- STATE KATALOG ---------- */
+const filterKatalog = { kategori: "Semua", umkmId: null, urut: "default" };
+
 function tampilToast(pesan) {
   const toast = $("#toast");
   toast.textContent = pesan;
@@ -78,39 +99,66 @@ function tampilkanView(nama) {
 }
 
 /* ---------- RENDER KOMPONEN ---------- */
+
+// Isi kotak foto: emoji sebagai dasar, foto asli (jika ada) menutupinya.
+// Bila foto gagal dimuat, foto dihapus dan emoji tampil kembali.
+function isiFoto(el, p) {
+  el.innerHTML = "";
+  el.style.background = p.warna;
+
+  const emoji = document.createElement("span");
+  emoji.className = "photo-emoji";
+  emoji.textContent = p.emoji;
+  el.appendChild(emoji);
+
+  if (p.gambar) {
+    const img = document.createElement("img");
+    img.src = p.gambar;
+    img.alt = p.nama;
+    img.loading = "lazy";
+    img.addEventListener("error", () => img.remove());
+    el.appendChild(img);
+  }
+
+  if (p.badge) {
+    const b = document.createElement("span");
+    b.className = "badge";
+    b.dataset.tipe = p.badge.toLowerCase();
+    b.textContent = p.badge;
+    el.appendChild(b);
+  }
+}
+
 function buatKartuProduk(p) {
   const umkm = getUmkm(p.umkmId);
-  const card = document.createElement("div");
+  const card = document.createElement("article");
   card.className = "product-card";
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
   card.innerHTML = `
-    <div class="product-photo" style="background:${p.warna}">${p.emoji}</div>
+    <div class="product-photo photo-box"></div>
     <div class="product-info">
+      <span class="product-cat"></span>
       <h3></h3>
       <span class="product-umkm"></span>
-      <span class="price">${rupiah(p.harga)}</span>
-      <button class="btn btn-secondary btn-choose">Pilih Produk</button>
+      <div class="product-foot">
+        <span class="price">${rupiah(p.harga)}</span>
+        <button type="button" class="btn-mini" tabindex="-1">Pilih</button>
+      </div>
     </div>`;
+  isiFoto(card.querySelector(".product-photo"), p);
+  card.querySelector(".product-cat").textContent = p.kategori || "";
   card.querySelector("h3").textContent = p.nama;
   card.querySelector(".product-umkm").textContent = umkm.nama + " • " + umkm.lokasi;
 
   card.addEventListener("click", () => tampilkanDetail(p.id));
-  return card;
-}
-
-function renderDaftarUmkm() {
-  const wadah = $("#umkm-list");
-  wadah.innerHTML = "";
-  umkmData.forEach((u) => {
-    const jumlah = produkData.filter((p) => p.umkmId === u.id).length;
-    const el = document.createElement("div");
-    el.className = "umkm-card";
-    el.innerHTML = `
-      <div class="umkm-icon">${u.ikon}</div>
-      <div><h3></h3><p></p></div>`;
-    el.querySelector("h3").textContent = u.nama;
-    el.querySelector("p").textContent = `${u.lokasi} • ${jumlah} produk`;
-    wadah.appendChild(el);
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      tampilkanDetail(p.id);
+    }
   });
+  return card;
 }
 
 function renderDaftarProduk(wadahSel, daftar) {
@@ -119,10 +167,55 @@ function renderDaftarProduk(wadahSel, daftar) {
   daftar.forEach((p) => wadah.appendChild(buatKartuProduk(p)));
 }
 
+function renderChips(wadah, aktif, onPilih) {
+  wadah.innerHTML = "";
+  [{ nama: "Semua", ikon: "✨" }, ...kategoriData].forEach((k) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip" + (k.nama === aktif ? " active" : "");
+    b.textContent = `${k.ikon} ${k.nama}`;
+    b.addEventListener("click", () => onPilih(k.nama));
+    wadah.appendChild(b);
+  });
+}
+
+function renderDaftarUmkm() {
+  const wadah = $("#umkm-list");
+  wadah.innerHTML = "";
+  umkmData.forEach((u) => {
+    const jumlah = produkData.filter((p) => p.umkmId === u.id).length;
+    const el = document.createElement("article");
+    el.className = "umkm-card";
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.style.setProperty("--umkm-warna", u.warna);
+    el.innerHTML = `
+      <div class="umkm-banner"><span>${u.ikon}</span><span>${u.ikon}</span><span>${u.ikon}</span></div>
+      <div class="umkm-body">
+        <div class="umkm-logo">${u.ikon}</div>
+        <div class="umkm-text"><h3></h3><p></p></div>
+      </div>
+      <span class="umkm-link">Lihat produk →</span>`;
+    el.querySelector("h3").textContent = u.nama;
+    el.querySelector("p").textContent = `📍 ${u.lokasi} · ${jumlah} produk`;
+
+    const buka = () => tampilkanKatalog({ kategori: "Semua", umkmId: u.id });
+    el.addEventListener("click", buka);
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        buka();
+      }
+    });
+    wadah.appendChild(el);
+  });
+}
+
 /* ---------- BERANDA ---------- */
 function tampilkanBeranda() {
+  renderChips($("#hero-chips"), null, (k) => tampilkanKatalog({ kategori: k, umkmId: null }));
+  renderDaftarProduk("#featured-list", produkData.slice(0, 8));
   renderDaftarUmkm();
-  renderDaftarProduk("#featured-list", produkData.slice(0, 4));
   tampilkanView("home");
 }
 
@@ -134,6 +227,7 @@ function prosesPencarian(kataKunci) {
     return (
       p.nama.toLowerCase().includes(kunci) ||
       p.deskripsi.toLowerCase().includes(kunci) ||
+      (p.kategori || "").toLowerCase().includes(kunci) ||
       umkm.nama.toLowerCase().includes(kunci)
     );
   });
@@ -162,8 +256,43 @@ function resetPencarian() {
 }
 
 /* ---------- LIHAT KATALOG ---------- */
-function tampilkanKatalog() {
-  renderDaftarProduk("#catalog-list", produkData);
+function daftarKatalogTerfilter() {
+  const hasil = produkData.filter(
+    (p) =>
+      (filterKatalog.kategori === "Semua" || p.kategori === filterKatalog.kategori) &&
+      (filterKatalog.umkmId === null || p.umkmId === filterKatalog.umkmId)
+  );
+  if (filterKatalog.urut === "termurah") hasil.sort((a, b) => a.harga - b.harga);
+  else if (filterKatalog.urut === "termahal") hasil.sort((a, b) => b.harga - a.harga);
+  else if (filterKatalog.urut === "nama") hasil.sort((a, b) => a.nama.localeCompare(b.nama, "id"));
+  return hasil;
+}
+
+function renderKatalog() {
+  renderChips($("#catalog-chips"), filterKatalog.kategori, (k) => {
+    filterKatalog.kategori = k;
+    renderKatalog();
+  });
+  $("#catalog-sort").value = filterKatalog.urut;
+
+  const tag = $("#catalog-umkm-tag");
+  if (filterKatalog.umkmId !== null) {
+    tag.hidden = false;
+    $("#catalog-umkm-nama").textContent = getUmkm(filterKatalog.umkmId)?.nama || "";
+  } else {
+    tag.hidden = true;
+  }
+
+  const daftar = daftarKatalogTerfilter();
+  $("#catalog-count").textContent = `${daftar.length} produk`;
+  $("#catalog-empty").hidden = daftar.length > 0;
+  renderDaftarProduk("#catalog-list", daftar);
+}
+
+// opsi (opsional) mengubah filter; tanpa opsi, filter terakhir dipertahankan
+function tampilkanKatalog(opsi) {
+  if (opsi) Object.assign(filterKatalog, opsi);
+  renderKatalog();
   tampilkanView("catalog");
 }
 
@@ -186,8 +315,9 @@ function tampilkanDetail(id) {
   const umkm = getUmkm(p.umkmId);
   produkTerpilih = p;
 
-  $("#detail-photo").textContent = p.emoji;
-  $("#detail-photo").style.background = p.warna;
+  isiFoto($("#detail-photo"), p);
+  $("#detail-cat").textContent = p.kategori || "";
+  $("#detail-cat").hidden = !p.kategori;
   $("#detail-name").textContent = p.nama;
   $("#detail-price").textContent = rupiah(p.harga);
   $("#detail-desc").textContent = p.deskripsi;
@@ -390,6 +520,9 @@ async function terapkanSesi(session) {
 /* =========================================================
    DASHBOARD MANAJER
    ========================================================= */
+let grafikHarian = null;
+let grafikUmkm = null;
+
 function tampilkanStatusDash(teks) {
   const el = $("#dash-status");
   el.textContent = teks;
@@ -433,6 +566,111 @@ function isiTabel(tbodySel, baris, kosongTeks) {
 function barisAngka(arr, indeksAngka) {
   arr.num = indeksAngka;
   return arr;
+}
+
+/* ----- Grafik (Chart.js) ----- */
+const kunciHari = (d) => d.toLocaleDateString("sv-SE"); // YYYY-MM-DD (waktu lokal)
+
+function singkatRupiah(v) {
+  if (v >= 1000000) return v / 1000000 + " jt";
+  if (v >= 1000) return v / 1000 + " rb";
+  return v;
+}
+
+function gambarGrafik(orders, hari, umkmMentah) {
+  const grid = $("#chart-grid");
+  if (!window.Chart) {
+    grid.hidden = true;
+    return;
+  }
+  grid.hidden = false;
+
+  Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+  Chart.defaults.color = "#7a6f66";
+
+  // ----- Nilai pembelian per hari -----
+  const perHari = new Map();
+  orders.forEach((o) => {
+    const k = kunciHari(new Date(o.created_at));
+    perHari.set(k, (perHari.get(k) || 0) + o.harga * o.jumlah);
+  });
+
+  const hariIni = new Date();
+  hariIni.setHours(0, 0, 0, 0);
+  let mulai = new Date(hariIni);
+  if (hari > 0) {
+    mulai.setDate(mulai.getDate() - (hari - 1));
+  } else if (orders.length) {
+    mulai = new Date(Math.min(...orders.map((o) => new Date(o.created_at).getTime())));
+    mulai.setHours(0, 0, 0, 0);
+  }
+
+  const label = [];
+  const nilai = [];
+  for (let d = new Date(mulai); d <= hariIni; d.setDate(d.getDate() + 1)) {
+    label.push(d.toLocaleDateString("id-ID", { day: "numeric", month: "short" }));
+    nilai.push(perHari.get(kunciHari(d)) || 0);
+  }
+
+  if (grafikHarian) grafikHarian.destroy();
+  grafikHarian = new Chart($("#chart-daily"), {
+    type: "line",
+    data: {
+      labels: label,
+      datasets: [{
+        label: "Nilai pembelian",
+        data: nilai,
+        borderColor: "#e8590c",
+        backgroundColor: "rgba(232, 89, 12, 0.12)",
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.35,
+        pointRadius: label.length > 45 ? 0 : 3,
+        pointBackgroundColor: "#e8590c"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => rupiah(c.parsed.y) } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+        y: { beginAtZero: true, ticks: { callback: singkatRupiah }, grid: { color: "#f5ebdf" } }
+      }
+    }
+  });
+
+  // ----- Nilai per UMKM -----
+  const palet = ["#e8590c", "#2f9e44", "#fcc419", "#7950f2", "#1c7ed6", "#e64980"];
+  if (grafikUmkm) grafikUmkm.destroy();
+  grafikUmkm = new Chart($("#chart-umkm"), {
+    type: "bar",
+    data: {
+      labels: umkmMentah.map((r) => r.label),
+      datasets: [{
+        data: umkmMentah.map((r) => r.nilai),
+        backgroundColor: umkmMentah.map((_, i) => palet[i % palet.length]),
+        borderRadius: 8,
+        maxBarThickness: 34
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => rupiah(c.parsed.x) } }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { callback: singkatRupiah }, grid: { color: "#f5ebdf" } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
 }
 
 async function muatDashboard() {
@@ -491,10 +729,11 @@ async function muatDashboard() {
     return [...peta.values()].sort((a, b) => b.nilai - a.nilai);
   };
 
-  const perUmkm = kelompokkan(
+  const umkmMentah = kelompokkan(
     (o) => o.umkm_id,
     (o) => getUmkm(o.umkm_id)?.nama || `UMKM #${o.umkm_id}`
-  ).map((r) => barisAngka([r.label, r.trx, r.item, rupiah(r.nilai)], [1, 2, 3]));
+  );
+  const perUmkm = umkmMentah.map((r) => barisAngka([r.label, r.trx, r.item, rupiah(r.nilai)], [1, 2, 3]));
 
   const perProduk = kelompokkan((o) => o.produk_id, (o) => o.nama_produk)
     .map((r) => barisAngka([r.label, r.trx, r.item, rupiah(r.nilai)], [1, 2, 3]));
@@ -516,7 +755,9 @@ async function muatDashboard() {
   isiTabel("#tbl-produk", perProduk, "Belum ada pembelian pada periode ini.");
   isiTabel("#tbl-recent", terbaru, "Belum ada pembelian pada periode ini.");
 
+  // Tampilkan dulu agar grafik mendapat ukuran yang benar
   $("#dash-content").hidden = false;
+  gambarGrafik(orders, hari, umkmMentah);
 }
 
 /* ---------- EVENT LISTENER ---------- */
@@ -525,7 +766,7 @@ function pasangEvent() {
     el.addEventListener("click", () => {
       const tujuan = el.dataset.view;
       if (tujuan === "home") tampilkanBeranda();
-      else if (tujuan === "catalog") tampilkanKatalog();
+      else if (tujuan === "catalog") tampilkanKatalog({ kategori: "Semua", umkmId: null });
       else if (tujuan === "search") { resetPencarian(); tampilkanView("search"); $("#keyword").focus(); }
       else if (tujuan === "login") { viewSetelahLogin = null; bukaHalamanLogin(); }
       else if (tujuan === "dashboard") bukaDashboard();
@@ -537,6 +778,27 @@ function pasangEvent() {
     tampilkanBeranda();
   });
 
+  // Pencarian di hero
+  $("#hero-search").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const kunci = $("#hero-keyword").value.trim();
+    if (!kunci) {
+      tampilkanKatalog({ kategori: "Semua", umkmId: null });
+      return;
+    }
+    resetPencarian();
+    $("#keyword").value = kunci;
+    tampilkanView("search");
+    prosesPencarian(kunci);
+    $("#hero-keyword").value = "";
+  });
+
+  // Carousel makanan pilihan
+  const geser = (arah) =>
+    $("#featured-list").scrollBy({ left: arah * 520, behavior: "smooth" });
+  $("#car-prev").addEventListener("click", () => geser(-1));
+  $("#car-next").addEventListener("click", () => geser(1));
+
   // Pencarian
   $("#search-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -545,9 +807,19 @@ function pasangEvent() {
   });
   $("#not-found-back").addEventListener("click", tampilkanBeranda);
 
+  // Katalog
+  $("#catalog-sort").addEventListener("change", (e) => {
+    filterKatalog.urut = e.target.value;
+    renderKatalog();
+  });
+  $("#catalog-umkm-clear").addEventListener("click", () => {
+    filterKatalog.umkmId = null;
+    renderKatalog();
+  });
+
   // Detail produk
   $("#btn-wa").addEventListener("click", bukaWhatsApp);
-  $("#btn-back-catalog").addEventListener("click", tampilkanKatalog);
+  $("#btn-back-catalog").addEventListener("click", () => tampilkanKatalog());
   $("#detail-qty").addEventListener("input", perbaruiTotalDetail);
 
   // Auth
