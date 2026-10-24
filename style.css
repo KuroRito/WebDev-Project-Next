@@ -412,7 +412,9 @@ button, input, select { font-family: inherit; }
   border: 3px solid #fff;
   border-radius: 50%;
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
+.umkm-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .umkm-text { padding-bottom: 2px; min-width: 0; }
 .umkm-text h3 { font-size: 1.02rem; font-weight: 700; line-height: 1.3; }
 .umkm-text p { font-size: 0.82rem; color: var(--muted); }
@@ -731,8 +733,22 @@ button, input, select { font-family: inherit; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; padding: 40px 28px; }
-  .hero-art { display: none; }
+  .hero { grid-template-columns: minmax(0, 1fr); padding: 40px 28px; }
+  .hero-content { min-width: 0; }
+  /* Bubble tetap tampil di HP: jadi deretan kecil di atas teks */
+  .hero-art {
+    order: -1;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hero-art .bubble {
+    position: static;
+    width: 56px; height: 56px;
+    font-size: 1.7rem;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  }
   .hero h1 { font-size: 2.1rem; }
   .chart-grid { grid-template-columns: 1fr; }
 }
@@ -740,6 +756,13 @@ button, input, select { font-family: inherit; }
 @media (max-width: 760px) {
   body { padding-bottom: 80px; }
   .container { padding: 0 16px; }
+  /* backdrop-filter membuat menu "fixed" menempel ke header (menutupi logo).
+     Matikan di HP supaya menu bawah benar-benar di dasar layar. */
+  .site-header {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #fffaf3;
+  }
   .header-inner { height: 58px; }
   .brand { font-size: 1.1rem; }
   .brand-mark { width: 36px; height: 36px; }
@@ -789,8 +812,8 @@ button, input, select { font-family: inherit; }
   .product-info { padding: 12px; }
   .btn-mini { display: none; }
 
-  .toolbar { flex-direction: column; align-items: stretch; }
-  .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .toolbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; padding-bottom: 4px; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
   .chips-hero { flex-wrap: wrap; }
   .sort-box select { width: 100%; }
