@@ -15,8 +15,10 @@ const sb =
 
 /* ---------- DATA ----------
    Field opsional pada produk:
-   - gambar : URL foto produk (jika kosong, tampil emoji)
-   - badge  : label di pojok foto, mis. "Terlaris", "Baru", "Promo" */
+   - gambar : foto produk, mis. "img/nasi-liwet.jpg" atau URL penuh (kosong = tampil emoji)
+   - badge  : label di pojok foto, mis. "Terlaris", "Baru", "Promo"
+   Field opsional pada UMKM:
+   - logo   : foto logo UMKM, mis. "img/logo-bu-sari.png" (kosong = tampil emoji "ikon") */
 const kategoriData = [
   { nama: "Makanan Berat", ikon: "🍛" },
   { nama: "Camilan",       ikon: "🥔" },
@@ -25,10 +27,10 @@ const kategoriData = [
 ];
 
 const umkmData = [
-  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", warna: "#ffe8cc", wa: "6281234567801" },
-  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", warna: "#fff3bf", wa: "6281234567802" },
-  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", warna: "#e9d8c4", wa: "6281234567803" },
-  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", warna: "#e0cfc2", wa: "6281234567804" }
+  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", logo: "", warna: "#ffe8cc", wa: "6281234567801" },
+  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", logo: "", warna: "#fff3bf", wa: "6281234567802" },
+  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", logo: "", warna: "#e9d8c4", wa: "6281234567803" },
+  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "", warna: "#e0cfc2", wa: "6281234567804" }
 ];
 
 const produkData = [
@@ -106,18 +108,26 @@ function isiFoto(el, p) {
   el.innerHTML = "";
   el.style.background = p.warna;
 
-  const emoji = document.createElement("span");
-  emoji.className = "photo-emoji";
-  emoji.textContent = p.emoji;
-  el.appendChild(emoji);
+  const tambahEmoji = () => {
+    const emoji = document.createElement("span");
+    emoji.className = "photo-emoji";
+    emoji.textContent = p.emoji;
+    el.insertBefore(emoji, el.firstChild);
+  };
 
   if (p.gambar) {
+    // Ada foto: tampilkan foto saja. Emoji hanya muncul jika foto gagal dimuat.
     const img = document.createElement("img");
     img.src = p.gambar;
     img.alt = p.nama;
     img.loading = "lazy";
-    img.addEventListener("error", () => img.remove());
+    img.addEventListener("error", () => {
+      img.remove();
+      tambahEmoji();
+    });
     el.appendChild(img);
+  } else {
+    tambahEmoji();
   }
 
   if (p.badge) {
@@ -126,6 +136,24 @@ function isiFoto(el, p) {
     b.dataset.tipe = p.badge.toLowerCase();
     b.textContent = p.badge;
     el.appendChild(b);
+  }
+}
+
+// Logo UMKM: foto jika u.logo diisi; jika kosong atau gagal dimuat tampil emoji u.ikon
+function isiLogo(el, u) {
+  el.innerHTML = "";
+  if (u.logo) {
+    const img = document.createElement("img");
+    img.src = u.logo;
+    img.alt = "Logo " + u.nama;
+    img.loading = "lazy";
+    img.addEventListener("error", () => {
+      img.remove();
+      el.textContent = u.ikon;
+    });
+    el.appendChild(img);
+  } else {
+    el.textContent = u.ikon;
   }
 }
 
@@ -192,10 +220,11 @@ function renderDaftarUmkm() {
     el.innerHTML = `
       <div class="umkm-banner"><span>${u.ikon}</span><span>${u.ikon}</span><span>${u.ikon}</span></div>
       <div class="umkm-body">
-        <div class="umkm-logo">${u.ikon}</div>
+        <div class="umkm-logo"></div>
         <div class="umkm-text"><h3></h3><p></p></div>
       </div>
       <span class="umkm-link">Lihat produk →</span>`;
+    isiLogo(el.querySelector(".umkm-logo"), u);
     el.querySelector("h3").textContent = u.nama;
     el.querySelector("p").textContent = `📍 ${u.lokasi} · ${jumlah} produk`;
 
@@ -344,9 +373,18 @@ async function bukaWhatsApp() {
   const p = produkTerpilih;
   const umkm = getUmkm(p.umkmId);
   const jumlah = ambilJumlah();
-  const pesan =
-    `Halo ${umkm.nama}, saya tertarik dengan produk "${p.nama}" ` +
-    `sebanyak ${jumlah} (${rupiah(p.harga * jumlah)}). Apakah masih tersedia?`;
+  const namaPemesan = currentProfile?.nama || currentUser.email;
+  const pesan = [
+    `Halo ${umkm.nama}, saya ingin memesan:`,
+    "",
+    `Produk : ${p.nama}`,
+    `Jumlah : ${jumlah}`,
+    `Harga  : ${rupiah(p.harga)} /item`,
+    `Total  : ${rupiah(p.harga * jumlah)}`,
+    "",
+    `Atas nama: ${namaPemesan}`,
+    "Apakah pesanan ini masih tersedia? Terima kasih 🙏"
+  ].join("\n");
   const url = `https://wa.me/${umkm.wa}?text=${encodeURIComponent(pesan)}`;
 
   // Buka WhatsApp langsung (sinkron) supaya tidak diblokir popup blocker
