@@ -30,7 +30,7 @@ const umkmData = [
   { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", logo: "", warna: "#ffe8cc", wa: "6281234567801" },
   { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", logo: "", warna: "#fff3bf", wa: "6281234567802" },
   { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", logo: "", warna: "#e9d8c4", wa: "6281234567803" },
-  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "", warna: "#e0cfc2", wa: "6281234567804" }
+  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "", warna: "#e0cfc2", wa: "6288212222891" }
 ];
 
 const produkData = [
