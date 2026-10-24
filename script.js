@@ -3,8 +3,7 @@
    ========================================================= */
 
 /* ---------- KONFIGURASI SUPABASE ----------
-   Isi dari: Supabase Dashboard > Project Settings > API
-   (pakai "anon public" key, JANGAN pakai service_role key) */
+   Isi dari: Supabase Dashboard > Project Settings > API */
 const SUPABASE_URL = "https://lrjyvxsfkdqsdqzceefi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxyanl2eHNma2Rxc2RxemNlZWZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NzExMzcsImV4cCI6MjEwODI0NzEzN30.8tJp4nKR3uJMZKnMN700H1kE2RsPX3coPoYzznqgrFw";
 
@@ -27,36 +26,36 @@ const kategoriData = [
 ];
 
 const umkmData = [
-  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", logo: "", warna: "#ffe8cc", wa: "6281234567801" },
-  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", logo: "", warna: "#fff3bf", wa: "6281234567802" },
-  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", logo: "", warna: "#e9d8c4", wa: "6281234567803" },
-  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "", warna: "#e0cfc2", wa: "6288212222891" }
+  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", logo: "img/UMKM.jpeg", warna: "#ffe8cc", wa: "6288212222891" },
+  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", logo: "img/keripik umkm.jpeg", warna: "#fff3bf", wa: "6288212222891" },
+  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", logo: "img/UMKM.jpeg", warna: "#e9d8c4", wa: "6288212222891" },
+  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "img/pak-hambali.png", warna: "#e0cfc2", wa: "6281525969883" }
 ];
 
 const produkData = [
   { id: 1, nama: "Nasi Liwet Komplit", harga: 25000, umkmId: 1, emoji: "🍛", warna: "#ffe8cc",
-    kategori: "Makanan Berat", badge: "Terlaris", gambar: "",
+    kategori: "Makanan Berat", badge: "Terlaris", gambar: "img/nasi liwet.jpeg",
     deskripsi: "Nasi liwet gurih dengan ayam suwir, tahu, tempe, lalapan, dan sambal terasi." },
   { id: 2, nama: "Ayam Goreng Kremes", harga: 22000, umkmId: 1, emoji: "🍗", warna: "#ffd8a8",
-    kategori: "Makanan Berat", badge: "", gambar: "",
+    kategori: "Makanan Berat", badge: "", gambar: "img/ayam.jpeg",
     deskripsi: "Ayam goreng bumbu kuning dengan taburan kremes renyah, disajikan dengan sambal." },
   { id: 3, nama: "Keripik Singkong Pedas", harga: 15000, umkmId: 2, emoji: "🥔", warna: "#fff3bf",
-    kategori: "Camilan", badge: "", gambar: "",
+    kategori: "Camilan", badge: "", gambar: "img/keripik singkong.jpeg",
     deskripsi: "Keripik singkong renyah dengan bumbu pedas manis. Kemasan 200 gram." },
   { id: 4, nama: "Keripik Pisang Cokelat", harga: 18000, umkmId: 2, emoji: "🍌", warna: "#ffec99",
-    kategori: "Camilan", badge: "", gambar: "",
+    kategori: "Camilan", badge: "", gambar: "img/piscok.jpg",
     deskripsi: "Keripik pisang tipis dilapisi cokelat lumer. Cocok untuk camilan keluarga." },
   { id: 5, nama: "Kopi Susu Gula Aren", harga: 20000, umkmId: 3, emoji: "☕", warna: "#e9d8c4",
-    kategori: "Minuman", badge: "", gambar: "",
+    kategori: "Minuman", badge: "", gambar: "img/kopi.jpeg",
     deskripsi: "Perpaduan espresso, susu segar, dan gula aren asli. Tersedia panas atau dingin." },
   { id: 6, nama: "Biji Kopi Arabika 250g", harga: 65000, umkmId: 3, emoji: "🫘", warna: "#d9c3a5",
-    kategori: "Minuman", badge: "", gambar: "",
+    kategori: "Minuman", badge: "", gambar: "img/biji kopi.jpeg",
     deskripsi: "Biji kopi arabika single origin, sangrai medium dengan aroma floral dan manis." },
   { id: 7, nama: "Bolu Pandan Lembut", harga: 35000, umkmId: 4, emoji: "🍰", warna: "#d3f9d8",
-    kategori: "Kue & Dessert", badge: "", gambar: "",
+    kategori: "Kue & Dessert", badge: "", gambar: "img/bolu.jpeg",
     deskripsi: "Bolu pandan super lembut tanpa pengawet, dipanggang segar setiap hari." },
-  { id: 8, nama: "Puding coklat", harga: 40000, umkmId: 4, emoji: "🍫", warna: "#e0cfc2",
-    kategori: "Kue & Dessert", badge: "Baru", gambar: "",
+  { id: 8, nama: "Puding coklat", harga: 10000, umkmId: 4, emoji: "🍫", warna: "#e0cfc2",
+    kategori: "Kue & Dessert", badge: "Baru", gambar: "img/puding.jpeg",
     deskripsi: "Puding coklat yang kenyal dengan cokelat premium dan topping fla." }
 ];
 
@@ -383,7 +382,7 @@ async function bukaWhatsApp() {
     `Total  : ${rupiah(p.harga * jumlah)}`,
     "",
     `Atas nama: ${namaPemesan}`,
-    "Apakah pesanan ini masih tersedia? Terima kasih 🙏"
+    "Apakah pesanan ini masih tersedia? Terima kasih "
   ].join("\n");
   const url = `https://wa.me/${umkm.wa}?text=${encodeURIComponent(pesan)}`;
 
