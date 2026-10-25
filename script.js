@@ -88,15 +88,111 @@ function tampilToast(pesan) {
   toastTimer = setTimeout(() => { toast.hidden = true; }, 3500);
 }
 
-/* ---------- NAVIGASI ANTAR TAMPILAN ---------- */
+/* ---------- NAVIGASI ANTAR TAMPILAN + RIWAYAT (TOMBOL KEMBALI) ----------
+   Setiap perpindahan halaman dicatat di riwayat browser (History API),
+   sehingga tombol "Kembali" di web, tombol back browser, dan tombol back HP
+   semuanya membawa user ke halaman sebelumnya dengan kondisi yang sama
+   (filter katalog, hasil pencarian, atau produk yang dibuka). */
+let viewAktifNama = "home";
+let kataKunciAktif = "";       // kata kunci pencarian yang sedang ditampilkan
+let sedangPulih = false;       // true saat memulihkan halaman dari riwayat
+let gantiEntri = false;        // true = ganti entri riwayat saat ini, bukan menambah baru
+let jumlahSetelahLogin = null; // jumlah beli yang dipertahankan saat user harus login dulu
+
+function ambilSnapshot(nama) {
+  const snap = { view: nama };
+  if (nama === "catalog") snap.filter = { ...filterKatalog };
+  if (nama === "search") snap.keyword = kataKunciAktif;
+  if (nama === "detail") snap.produkId = produkTerpilih ? produkTerpilih.id : null;
+  return snap;
+}
+
+// Perbarui entri riwayat saat ini (mis. filter atau hasil pencarian berubah) tanpa menambah entri
+function simpanSnapshot() {
+  const idx = history.state?.idx ?? 0;
+  history.replaceState({ idx, snap: ambilSnapshot(viewAktifNama) }, "");
+}
+
+function catatRiwayat(nama) {
+  if (sedangPulih) return; // sedang kembali lewat riwayat, jangan tambah entri
+  const snap = ambilSnapshot(nama);
+  const sekarang = history.state;
+  const idx = sekarang?.idx ?? 0;
+
+  if (gantiEntri) {
+    history.replaceState({ idx, snap }, "");
+    return;
+  }
+  // Halaman yang sama persis tidak dicatat dua kali (mis. klik Beranda saat sudah di Beranda)
+  if (sekarang?.snap && JSON.stringify(sekarang.snap) === JSON.stringify(snap)) return;
+  history.pushState({ idx: idx + 1, snap }, "");
+}
+
+function perbaruiTombolKembali() {
+  const idx = history.state?.idx ?? 0;
+  $("#backbar").hidden = !(idx > 0 && viewAktifNama !== "home");
+}
+
 function tampilkanView(nama) {
+  viewAktifNama = nama;
+  catatRiwayat(nama);
+
   $$(".view").forEach((v) => v.classList.remove("active"));
   $("#view-" + nama).classList.add("active");
 
   $$(".nav-btn[data-view]").forEach((b) => {
     b.classList.toggle("active", b.dataset.view === nama);
   });
+  perbaruiTombolKembali();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function kembali() {
+  if ((history.state?.idx ?? 0) > 0) history.back();
+  else tampilkanBeranda();
+}
+
+// Tampilkan ulang halaman dari snapshot riwayat
+function pulihkan(snap) {
+  sedangPulih = true;
+  try {
+    switch (snap?.view) {
+      case "search":
+        resetPencarian();
+        tampilkanView("search");
+        if (snap.keyword) {
+          $("#keyword").value = snap.keyword;
+          prosesPencarian(snap.keyword);
+        }
+        break;
+      case "catalog":
+        tampilkanKatalog(snap.filter);
+        break;
+      case "detail":
+        tampilkanDetail(snap.produkId);
+        if (jumlahSetelahLogin) {
+          $("#detail-qty").value = jumlahSetelahLogin;
+          perbaruiTotalDetail();
+          jumlahSetelahLogin = null;
+        }
+        break;
+      case "login":
+        if (currentUser) tampilkanBeranda();
+        else bukaHalamanLogin();
+        break;
+      case "dashboard":
+        if (currentUser && isManager()) bukaDashboard();
+        else tampilkanBeranda();
+        break;
+      default:
+        tampilkanBeranda();
+    }
+  } finally {
+    sedangPulih = false;
+  }
+  // Pastikan entri riwayat mencerminkan halaman yang benar-benar tampil
+  simpanSnapshot();
+  perbaruiTombolKembali();
 }
 
 /* ---------- RENDER KOMPONEN ---------- */
@@ -249,6 +345,7 @@ function tampilkanBeranda() {
 
 /* ---------- CARI MAKANAN ---------- */
 function prosesPencarian(kataKunci) {
+  kataKunciAktif = kataKunci.trim();
   const kunci = kataKunci.trim().toLowerCase();
   const hasil = produkData.filter((p) => {
     const umkm = getUmkm(p.umkmId);
@@ -274,9 +371,11 @@ function prosesPencarian(kataKunci) {
     info.textContent = `Ditemukan ${hasil.length} produk untuk "${kataKunci.trim()}"`;
     renderDaftarProduk("#search-results", hasil);
   }
+  simpanSnapshot(); // agar tombol Kembali memulihkan hasil pencarian ini
 }
 
 function resetPencarian() {
+  kataKunciAktif = "";
   $("#keyword").value = "";
   $("#search-info").hidden = true;
   $("#not-found").hidden = true;
@@ -300,6 +399,7 @@ function renderKatalog() {
   renderChips($("#catalog-chips"), filterKatalog.kategori, (k) => {
     filterKatalog.kategori = k;
     renderKatalog();
+    simpanSnapshot();
   });
   $("#catalog-sort").value = filterKatalog.urut;
 
@@ -365,6 +465,7 @@ async function bukaWhatsApp() {
   // Wajib login agar pembelian tercatat atas nama user
   if (!currentUser) {
     viewSetelahLogin = "detail";
+    jumlahSetelahLogin = ambilJumlah();
     bukaHalamanLogin("Masuk dulu untuk memesan produk ini.");
     return;
   }
@@ -539,18 +640,28 @@ async function terapkanSesi(session) {
   const viewAktif = document.querySelector(".view.active")?.id;
 
   if (currentUser) {
-    // Setelah login: lanjut ke tujuan semula, atau ke beranda jika masih di halaman login
-    if (viewSetelahLogin) {
+    if (viewAktif === "view-login") {
       const tujuan = viewSetelahLogin;
       viewSetelahLogin = null;
-      tampilkanView(tujuan);
-    } else if (viewAktif === "view-login") {
-      if (isManager()) bukaDashboard();
-      else tampilkanBeranda();
+
+      if (tujuan && history.state?.snap?.view === "login" && (history.state?.idx ?? 0) > 0) {
+        // Kembali ke halaman sebelum login (produk tadi) lewat riwayat,
+        // jadi halaman login tidak menumpuk di riwayat.
+        history.back();
+      } else {
+        // Halaman login digantikan, bukan ditumpuk
+        gantiEntri = true;
+        if (tujuan) tampilkanView(tujuan);
+        else if (isManager()) bukaDashboard();
+        else tampilkanBeranda();
+        gantiEntri = false;
+      }
     }
-  } else {
+  } else if (viewAktif === "view-dashboard") {
     // Setelah keluar: tutup halaman yang butuh login/role
-    if (viewAktif === "view-dashboard") tampilkanBeranda();
+    gantiEntri = true;
+    tampilkanBeranda();
+    gantiEntri = false;
   }
 }
 
@@ -848,11 +959,17 @@ function pasangEvent() {
   $("#catalog-sort").addEventListener("change", (e) => {
     filterKatalog.urut = e.target.value;
     renderKatalog();
+    simpanSnapshot();
   });
   $("#catalog-umkm-clear").addEventListener("click", () => {
     filterKatalog.umkmId = null;
     renderKatalog();
+    simpanSnapshot();
   });
+
+  // Tombol kembali (web) + tombol back browser/HP
+  $("#btn-back").addEventListener("click", kembali);
+  window.addEventListener("popstate", (e) => pulihkan(e.state?.snap));
 
   // Detail produk
   $("#btn-wa").addEventListener("click", bukaWhatsApp);
@@ -874,6 +991,10 @@ function pasangEvent() {
 /* ---------- MULAI ---------- */
 document.addEventListener("DOMContentLoaded", async () => {
   pasangEvent();
+
+  // Titik awal riwayat: selalu mulai dari Beranda (juga setelah refresh)
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  history.replaceState({ idx: 0, snap: { view: "home" } }, "");
   tampilkanBeranda();
 
   if (!sb) {
