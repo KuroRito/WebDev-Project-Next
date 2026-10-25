@@ -841,3 +841,31 @@ button, input, select { font-family: inherit; }
   .product-card, .umkm-card, .btn, .chip, .photo-emoji, .photo-box img { transition: none; }
   html { scroll-behavior: auto; }
 }
+
+/* =========================================================
+   TOMBOL KEMBALI
+   ========================================================= */
+.backbar { padding-top: 18px; }
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--primary-dark);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.2s, transform 0.1s;
+}
+.back-btn:hover { background: var(--primary-soft); }
+.back-btn:active { transform: scale(0.96); }
+.back-btn:focus-visible { outline: 3px solid #ffa94d; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .back-btn { transition: none; }
+}
