@@ -26,10 +26,10 @@ const kategoriData = [
 ];
 
 const umkmData = [
-  { id: 1, nama: "Warung Bu Sari",     lokasi: "Bandung",     ikon: "🍚", logo: "img/UMKM.jpeg", warna: "#ffe8cc", wa: "6288212222891" },
-  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Yogyakarta",  ikon: "🥔", logo: "img/keripik umkm.jpeg", warna: "#fff3bf", wa: "6288212222891" },
-  { id: 3, nama: "Kopi Nusantara",     lokasi: "Jakarta",     ikon: "☕", logo: "img/UMKM.jpeg", warna: "#e9d8c4", wa: "6288212222891" },
-  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur", ikon: "🍫", logo: "img/pak-hambali.png", warna: "#e0cfc2", wa: "6281525969883" }
+  { id: 1, nama: "Warung Bu Sari",     lokasi: "Ngawi Selatan",ikon: "🍚", logo: "img/UMKM.jpeg", warna: "#ffe8cc", wa: "6288212222891" },
+  { id: 2, nama: "Keripik Mbak Rina",  lokasi: "Ngawi Utara",  ikon: "🥔", logo: "img/keripik umkm.jpeg", warna: "#fff3bf", wa: "6288212222891" },
+  { id: 3, nama: "Kopi Nusantara",     lokasi: "Ngawi Barat",  ikon: "☕", logo: "img/UMKM.jpeg", warna: "#e9d8c4", wa: "6288212222891" },
+  { id: 4, nama: "Pak Hambali",        lokasi: "Ngawi Timur",  ikon: "🍫", logo: "img/pak-hambali.png", warna: "#e0cfc2", wa: "6281525969883" }
 ];
 
 const produkData = [
